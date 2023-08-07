@@ -34,6 +34,9 @@ _cgo_defun.c
 _cgo_gotypes.go
 _cgo_export.*
 
+
+#.DS_Store
+*.DS_Store
 # Common IDE folders
 .idea
 .vscode
