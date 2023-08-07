@@ -9,6 +9,13 @@ import (
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain"
 )
 
+type Dataset struct {
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	Version string `json:"version"`
+	// Add more fields as needed based on your dataset's structure
+}
+
 // GetAllHeroes Handler function to fetch all heroes
 func (h *Handler) GetAllHeroes(c *gin.Context) {
 	/* TODO: Implement service

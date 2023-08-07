@@ -5,13 +5,13 @@ import (
 
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain/hero"
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/repository/dataset"
+	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/repository/storage"
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/rest"
 )
 
 func main() {
 	r := gin.Default()
-
-	heroService := hero.NewService(dataset.NewRepository())
+	heroService := hero.NewService(storage.NewRepository(), dataset.NewRepository("./internal/pkg/repository/dataset2/dataset.csv"))
 	handler := rest.NewHandler(heroService)
 	// API endpoint to fetch all heroes
 	r.GET("/api/heroes", handler.GetAllHeroes)
