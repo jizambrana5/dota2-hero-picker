@@ -36,6 +36,10 @@ func (s Service) GetHeroSuggestion(ctx context.Context) ([]Hero, error) {
 	panic("implement me")
 }
 
+func (s Service) GetDataSet(ctx context.Context) ([][]string, error) {
+	return s.dataset.GetRecords(ctx)
+}
+
 func NewService(storage Storage, dataset Dataset) *Service {
 	return &Service{storage: storage, dataset: dataset}
 }

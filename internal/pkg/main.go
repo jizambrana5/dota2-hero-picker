@@ -11,13 +11,19 @@ import (
 
 func main() {
 	r := gin.Default()
-	heroService := hero.NewService(database.NewRepository(database.RedisConfig{}), dataset.NewRepository("./internal/pkg/repository/dataset2/dataset.csv"))
+	heroService := hero.NewService(database.NewRepository(database.RedisConfig{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+		Timeout:  100000000000000,
+	}), dataset.NewRepository("./internal/pkg/repository/dataset/dataset.csv"))
 	handler := rest.NewHandler(heroService)
 	// API endpoint to fetch all heroes
 	r.GET("/api/heroes", handler.GetAllHeroes)
 
 	// API endpoint to suggest a random hero based on user preferences
 	r.POST("/api/hero-picker", handler.GetHeroSuggestion)
+	r.GET("/api/dataset", handler.GetDataSet)
 
 	err := r.Run(":8080")
 	if err != nil {

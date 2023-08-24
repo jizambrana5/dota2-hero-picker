@@ -13,6 +13,7 @@ type Handler struct {
 type HeroService interface {
 	GetAllHeroes(ctx context.Context) ([]hero.Hero, error)
 	GetHeroSuggestion(ctx context.Context) ([]hero.Hero, error)
+	GetDataSet(ctx context.Context) ([][]string, error)
 }
 
 //var _ HeroService = (*investment.Service)(nil)
