@@ -1,6 +1,8 @@
 package rest
 
 import (
+	"bytes"
+	"encoding/csv"
 	"math/rand"
 	"net/http"
 
@@ -66,6 +68,18 @@ func (h *Handler) GetHeroSuggestion(c *gin.Context) {
 		randomHero := filteredHeroes[rand.Intn(len(filteredHeroes))]
 		c.JSON(http.StatusOK, randomHero)
 	}
+}
+
+func (h *Handler) GetDataSet(c *gin.Context) {
+	dataset, err := h.heroService.GetDataSet(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "get data set error"})
+		return
+	}
+	csvBuffer := new(bytes.Buffer)
+	writer := csv.NewWriter(csvBuffer)
+	writer.WriteAll(dataset)
+	c.JSON(http.StatusOK, dataset)
 }
 
 // Helper function to filter heroes based on user preferences
