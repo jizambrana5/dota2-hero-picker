@@ -14,6 +14,7 @@ type MockRedisClient struct {
 	GetFn  func(context.Context, string) *redis.StringCmd
 	KeysFn func(context.Context, string) *redis.StringSliceCmd
 	PingFn func(ctx context.Context) *redis.StatusCmd
+	SetFn  func(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd
 }
 
 func (m *MockRedisClient) Get(ctx context.Context, key string) *redis.StringCmd {
@@ -26,6 +27,10 @@ func (m *MockRedisClient) Keys(ctx context.Context, key string) *redis.StringSli
 
 func (m *MockRedisClient) Ping(ctx context.Context) *redis.StatusCmd {
 	return m.PingFn(ctx)
+}
+
+func (m *MockRedisClient) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd {
+	return m.SetFn(ctx, key, value, expiration)
 }
 
 type databaseTestSuite struct {

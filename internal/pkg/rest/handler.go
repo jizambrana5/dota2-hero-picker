@@ -3,6 +3,7 @@ package rest
 import (
 	"context"
 
+	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain"
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain/hero"
 )
 
@@ -11,12 +12,14 @@ type Handler struct {
 }
 
 type HeroService interface {
-	GetAllHeroes(ctx context.Context) ([]hero.Hero, error)
-	GetHeroSuggestion(ctx context.Context) ([]hero.Hero, error)
+	GetAllHeroes(ctx context.Context) ([]domain.Hero, error)
+	GetHeroSuggestion(ctx context.Context, preferences domain.UserPreferences) ([]domain.Hero, error)
 	GetDataSet(ctx context.Context) ([][]string, error)
+	SaveHeroes(ctx context.Context) error
+	GetHero(ctx context.Context, id string) (domain.Hero, error)
 }
 
-//var _ HeroService = (*investment.Service)(nil)
+var _ HeroService = (*hero.Service)(nil)
 
 func NewHandler(heroService HeroService) *Handler {
 	return &Handler{

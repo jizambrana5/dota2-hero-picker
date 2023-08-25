@@ -24,6 +24,7 @@ type Database interface {
 	Get(ctx context.Context, key string) *redis.StringCmd
 	Keys(ctx context.Context, pattern string) *redis.StringSliceCmd
 	Ping(ctx context.Context) *redis.StatusCmd
+	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd
 }
 
 func NewRepository(config RedisConfig) *Repository {
