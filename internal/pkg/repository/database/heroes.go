@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 
 	"github.com/redis/go-redis/v9"
 
@@ -41,6 +42,9 @@ func (r *Repository) GetAllHeroes(ctx context.Context) ([]domain.Hero, error) {
 		return nil, fmt.Errorf("failed to fetch hero keys from Redis: %w", err)
 	}
 
+	// Sort the keys
+	sort.Strings(keys)
+
 	var heroes []domain.Hero
 	for _, key := range keys {
 		heroJSON, err := r.rdb.Get(ctx, key).Bytes()
@@ -56,4 +60,22 @@ func (r *Repository) GetAllHeroes(ctx context.Context) ([]domain.Hero, error) {
 		heroes = append(heroes, hero)
 	}
 	return heroes, nil
+}
+
+func (r *Repository) SaveHero(ctx context.Context, hero domain.Hero) error {
+	// Convert hero struct to JSON string
+	heroJSON, err := json.Marshal(hero)
+	if err != nil {
+		fmt.Println("Error marshaling hero:", err)
+		return err
+	}
+	// Save hero data as a Redis string value
+	_, err = r.rdb.Set(ctx, hero.HeroIndex, heroJSON, 0).Result()
+	if err != nil {
+		fmt.Println("Error saving hero:", err)
+		return err
+	}
+
+	fmt.Println("Hero saved successfully")
+	return nil
 }

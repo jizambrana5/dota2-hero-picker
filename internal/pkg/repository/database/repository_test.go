@@ -14,6 +14,7 @@ type MockRedisClient struct {
 	GetFn  func(context.Context, string) *redis.StringCmd
 	KeysFn func(context.Context, string) *redis.StringSliceCmd
 	PingFn func(ctx context.Context) *redis.StatusCmd
+	SetFn  func(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd
 }
 
 func (m *MockRedisClient) Get(ctx context.Context, key string) *redis.StringCmd {
@@ -28,6 +29,10 @@ func (m *MockRedisClient) Ping(ctx context.Context) *redis.StatusCmd {
 	return m.PingFn(ctx)
 }
 
+func (m *MockRedisClient) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd {
+	return m.SetFn(ctx, key, value, expiration)
+}
+
 type databaseTestSuite struct {
 	suite.Suite
 	ctx    context.Context
@@ -40,7 +45,7 @@ func (t *databaseTestSuite) SetupTest() {
 	t.dbMock = &MockRedisClient{
 		GetFn: func(ctx context.Context, s string) *redis.StringCmd {
 			rd := redis.NewStringCmd(t.ctx, "hero_test")
-			rd.SetVal(`{"hero_index": 1}`)
+			rd.SetVal(`{"hero_index": "1"}`)
 			return rd
 		},
 		KeysFn: func(ctx context.Context, s string) *redis.StringSliceCmd {
@@ -60,14 +65,16 @@ func (t *databaseTestSuite) Test_NewRepository_Panic() {
 }
 func (t *databaseTestSuite) Test_NewRepository_Success() {
 	t.dbMock = new(MockRedisClient)
-
+	t.dbMock.PingFn = func(ctx context.Context) *redis.StatusCmd {
+		return redis.NewStatusCmd(t.ctx)
+	}
 	defer func() {
 		r := recover()
 		assert.NotNil(t.T(), r)
 		assert.Contains(t.T(), r.(string), "failed to connect to Redis")
 	}()
 	repo := NewRepository(RedisConfig{
-		Addr:     "localhost:6379",
+		Addr:     "localhost:1111",
 		Password: "",
 		DB:       0,
 		Timeout:  time.Second,

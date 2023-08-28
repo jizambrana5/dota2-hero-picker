@@ -3,7 +3,6 @@ package rest
 import (
 	"bytes"
 	"encoding/csv"
-	"math/rand"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,65 +10,28 @@ import (
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain"
 )
 
-type Dataset struct {
-	ID      string `json:"id"`
-	Name    string `json:"name"`
-	Version string `json:"version"`
-	// Add more fields as needed based on your dataset's structure
+// GetHero Handler function to fetch a hero by index
+func (h *Handler) GetHero(c *gin.Context) {
+	id := c.Param("id")
+	hero, err := h.heroService.GetHero(c, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "error getting hero"})
+		return
+	}
+	c.JSON(http.StatusOK, hero)
 }
 
 // GetAllHeroes Handler function to fetch all heroes
 func (h *Handler) GetAllHeroes(c *gin.Context) {
-	/* TODO: Implement service
 	heroes, err := h.heroService.GetAllHeroes(c)
 	if err != nil {
-		return err
-	}
-	*/
-	heroes := []domain.Hero{
-		{HeroIndex: 1, PrimaryAttribute: "str", NameInGame: "Hero 1", Role: []domain.Role{"Carry", "Disabler"}},
-		{HeroIndex: 2, PrimaryAttribute: "agi", NameInGame: "Hero 2", Role: []domain.Role{"Carry", "Escape"}},
-		{HeroIndex: 3, PrimaryAttribute: "int", NameInGame: "Hero 3", Role: []domain.Role{"Support", "Nuker"}},
-		// Add more heroes as needed
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "get all heroes error"})
+		return
 	}
 	c.JSON(http.StatusOK, heroes)
 }
 
-// GetHeroSuggestion Handler function to suggest a random hero based on user preferences
-func (h *Handler) GetHeroSuggestion(c *gin.Context) {
-	/* TODO: Implement service
-	hero, err := h.heroService.GetHeroSuggestion(c)
-	if err != nil {
-		return err
-	}
-	*/
-
-	heroes := []domain.Hero{
-		{HeroIndex: 1, PrimaryAttribute: "str", NameInGame: "Hero 1", Role: []domain.Role{"Carry", "Disabler"}},
-		{HeroIndex: 2, PrimaryAttribute: "agi", NameInGame: "Hero 2", Role: []domain.Role{"Carry", "Escape"}},
-		{HeroIndex: 3, PrimaryAttribute: "int", NameInGame: "Hero 3", Role: []domain.Role{"Support", "Nuker"}},
-		// Add more heroes as needed
-	}
-
-	var userPreferences domain.UserPreferences
-	// Bind the JSON data from the request body to userPreferences struct
-	if err := c.ShouldBindJSON(&userPreferences); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON data"})
-		return
-	}
-
-	// Filter heroes based on user preferences
-	filteredHeroes := filterHeroes(userPreferences, heroes)
-
-	// Return a random hero from the filtered list
-	if len(filteredHeroes) == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"message": "No hero found matching the criteria"})
-	} else {
-		randomHero := filteredHeroes[rand.Intn(len(filteredHeroes))]
-		c.JSON(http.StatusOK, randomHero)
-	}
-}
-
+// GetDataSet Handler function to obtain the original data from the dataset
 func (h *Handler) GetDataSet(c *gin.Context) {
 	dataset, err := h.heroService.GetDataSet(c)
 	if err != nil {
@@ -82,37 +44,32 @@ func (h *Handler) GetDataSet(c *gin.Context) {
 	c.JSON(http.StatusOK, dataset)
 }
 
-// Helper function to filter heroes based on user preferences
-func filterHeroes(preferences domain.UserPreferences, heroes []domain.Hero) []domain.Hero {
-	var filtered []domain.Hero
-
-	for _, hero := range heroes {
-		if hero.PrimaryAttribute == preferences.PrimaryAttribute {
-			if hasAllRoles(hero.Role, preferences.Roles) {
-				filtered = append(filtered, hero)
-			}
-		}
+// GetHeroSuggestion Handler function to suggest a random hero based on user preferences
+func (h *Handler) GetHeroSuggestion(c *gin.Context) {
+	var userPreferences domain.UserPreferences
+	// Bind the JSON data from the request body to userPreferences struct
+	if err := c.ShouldBindJSON(&userPreferences); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON data"})
+		return
 	}
 
-	return filtered
+	heroSuggestion, err := h.heroService.GetHeroSuggestion(c, userPreferences)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "get hero suggestion error"})
+		return
+	}
+	if heroSuggestion == nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "No hero found matching the criteria"})
+	}
+	c.JSON(http.StatusOK, heroSuggestion)
 }
 
-// Helper function to check if a hero has all specified roles
-func hasAllRoles(heroRoles []domain.Role, userRoles []domain.Role) bool {
-	for _, role := range userRoles {
-		if !contains(heroRoles, role) {
-			return false
-		}
+// SaveHeroes Handler function to save all dataset record into the database
+func (h *Handler) SaveHeroes(c *gin.Context) {
+	err := h.heroService.SaveHeroes(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "error saving heroes from dataset"})
+		return
 	}
-	return true
-}
-
-// Helper function to check if a string is present in a slice of strings
-func contains(slice []domain.Role, str domain.Role) bool {
-	for _, s := range slice {
-		if s == str {
-			return true
-		}
-	}
-	return false
+	c.JSON(http.StatusOK, nil)
 }

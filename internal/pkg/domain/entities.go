@@ -1,5 +1,7 @@
 package domain
 
+import "strings"
+
 const (
 	Carry     Role = "Carry"
 	Disabler  Role = "Disabler"
@@ -12,7 +14,7 @@ const (
 
 type (
 	Hero struct {
-		HeroIndex        int    `json:"hero_index"`
+		HeroIndex        string `json:"hero_index"`
 		PrimaryAttribute string `json:"primary_attr"`
 		NameInGame       string `json:"localized_name"`
 		Role             []Role `json:"roles"`
@@ -25,3 +27,13 @@ type (
 
 	Role string
 )
+
+func BuildRoles(s string) []Role {
+	roleStr := strings.Replace(s, " ", "", -1)
+	singleRoles := strings.Split(roleStr, ",")
+	roles := make([]Role, 0)
+	for _, v := range singleRoles {
+		roles = append(roles, Role(v))
+	}
+	return roles
+}

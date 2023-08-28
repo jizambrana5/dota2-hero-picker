@@ -1,9 +1,10 @@
+//go:generate moq -pkg mocks -out ./mocks/handler_mocks.go -skip-ensure . HeroService
 package rest
 
 import (
 	"context"
 
-	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain/hero"
+	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain"
 )
 
 type Handler struct {
@@ -11,12 +12,12 @@ type Handler struct {
 }
 
 type HeroService interface {
-	GetAllHeroes(ctx context.Context) ([]hero.Hero, error)
-	GetHeroSuggestion(ctx context.Context) ([]hero.Hero, error)
+	GetHero(ctx context.Context, id string) (domain.Hero, error)
+	GetAllHeroes(ctx context.Context) ([]domain.Hero, error)
 	GetDataSet(ctx context.Context) ([][]string, error)
+	GetHeroSuggestion(ctx context.Context, preferences domain.UserPreferences) ([]domain.Hero, error)
+	SaveHeroes(ctx context.Context) error
 }
-
-//var _ HeroService = (*investment.Service)(nil)
 
 func NewHandler(heroService HeroService) *Handler {
 	return &Handler{

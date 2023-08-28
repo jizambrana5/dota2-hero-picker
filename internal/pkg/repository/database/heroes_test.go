@@ -43,10 +43,10 @@ func (t *databaseTestSuite) TestRepository_GetHero_UnmarshallError() {
 }
 
 func (t *databaseTestSuite) TestRepository_GetHero_Success() {
-	hero, err := t.repo.GetHero(context.Background(), "heroID")
+	hero, err := t.repo.GetHero(context.Background(), "1")
 	t.Nil(err)
 	t.NotEmpty(hero)
-	t.Equal(1, hero.HeroIndex)
+	t.Equal("1", hero.HeroIndex)
 }
 
 func (t *databaseTestSuite) TestRepository_GetAllHeroes_GetKeysError() {
@@ -74,7 +74,7 @@ func (t *databaseTestSuite) TestRepository_GetAllHeroes_GetHeroError() {
 func (t *databaseTestSuite) TestRepository_GetAllHeroes_UnmarshallError() {
 	t.dbMock.GetFn = func(ctx context.Context, s string) *redis.StringCmd {
 		rd := redis.NewStringCmd(t.ctx, "hero_test")
-		rd.SetVal(`{"hero_index": "1""}`)
+		rd.SetVal(`{"hero_index": 1}`)
 		return rd
 	}
 	heroes, err := t.repo.GetAllHeroes(context.Background())
@@ -87,10 +87,10 @@ func (t *databaseTestSuite) TestRepository_GetAllHeroes_Success() {
 		rd := redis.NewStringCmd(t.ctx, "hero_test")
 		switch s {
 		case "hero_1":
-			rd.SetVal(`{"hero_index": 1}`)
+			rd.SetVal(`{"hero_index": "1"}`)
 			return rd
 		default:
-			rd.SetVal(`{"hero_index": 2}`)
+			rd.SetVal(`{"hero_index": "2"}`)
 			return rd
 		}
 	}
