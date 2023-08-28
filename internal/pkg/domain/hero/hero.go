@@ -4,38 +4,47 @@ import (
 	"context"
 
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain"
+	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/lib/errors"
 )
 
 func (s Service) GetHero(ctx context.Context, id string) (domain.Hero, error) {
 	hero, err := s.storage.GetHero(ctx, id)
 	if err != nil {
-		return domain.Hero{}, err
+		return domain.Hero{}, errors.HeroNotFound
 	}
 	return hero, nil
 }
 
 func (s Service) GetAllHeroes(ctx context.Context) ([]domain.Hero, error) {
-	return s.storage.GetAllHeroes(ctx)
+	heroes, err := s.storage.GetAllHeroes(ctx)
+	if err != nil {
+		return nil, errors.HeroGetAll
+	}
+	return heroes, nil
 }
 
 func (s Service) GetHeroSuggestion(ctx context.Context, userPreferences domain.UserPreferences) ([]domain.Hero, error) {
 	heroes, err := s.storage.GetAllHeroes(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.HeroGetAll
 	}
 	// Filter heroes based on user preferences
 	return filterHeroes(userPreferences, heroes), nil
 }
 
 func (s Service) GetDataSet(ctx context.Context) ([][]string, error) {
-	return s.dataset.GetRecords(ctx)
+	records, err := s.dataset.GetRecords(ctx)
+	if err != nil {
+		return nil, errors.GetDataSet
+	}
+	return records, nil
 }
 
 func (s Service) SaveHeroes(ctx context.Context) error {
 	// get records from dataset
 	dataset, err := s.dataset.GetRecords(ctx)
 	if err != nil {
-		return err
+		return errors.GetDataSet
 	}
 
 	// iterate over dataset, build hero and save it in db
@@ -52,7 +61,7 @@ func (s Service) SaveHeroes(ctx context.Context) error {
 		}
 		err = s.storage.SaveHero(ctx, hero)
 		if err != nil {
-			return err
+			return errors.HeroSave
 		}
 	}
 	return nil
