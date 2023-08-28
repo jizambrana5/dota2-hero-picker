@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain"
+	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/lib/errors"
 )
 
 // GetHero Handler function to fetch a hero by index
@@ -15,17 +16,25 @@ func (h *Handler) GetHero(c *gin.Context) {
 	id := c.Param("id")
 	hero, err := h.heroService.GetHero(c, id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "error getting hero"})
+		handleError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, hero)
+}
+
+func handleError(c *gin.Context, err error) {
+	if customErr, ok := err.(errors.CustomError); ok {
+		c.JSON(customErr.HTTPCode(), gin.H{"code": customErr.InternalCode(), "message": customErr.Error()})
+	} else {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+	}
 }
 
 // GetAllHeroes Handler function to fetch all heroes
 func (h *Handler) GetAllHeroes(c *gin.Context) {
 	heroes, err := h.heroService.GetAllHeroes(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "get all heroes error"})
+		handleError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, heroes)
@@ -35,7 +44,7 @@ func (h *Handler) GetAllHeroes(c *gin.Context) {
 func (h *Handler) GetDataSet(c *gin.Context) {
 	dataset, err := h.heroService.GetDataSet(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "get data set error"})
+		handleError(c, err)
 		return
 	}
 	csvBuffer := new(bytes.Buffer)
@@ -55,7 +64,7 @@ func (h *Handler) GetHeroSuggestion(c *gin.Context) {
 
 	heroSuggestion, err := h.heroService.GetHeroSuggestion(c, userPreferences)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "get hero suggestion error"})
+		handleError(c, err)
 		return
 	}
 	if heroSuggestion == nil {
@@ -68,7 +77,7 @@ func (h *Handler) GetHeroSuggestion(c *gin.Context) {
 func (h *Handler) SaveHeroes(c *gin.Context) {
 	err := h.heroService.SaveHeroes(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "error saving heroes from dataset"})
+		handleError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, nil)

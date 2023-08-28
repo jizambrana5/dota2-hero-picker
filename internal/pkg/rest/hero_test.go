@@ -2,20 +2,19 @@ package rest
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"net/url"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain"
+	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/lib/errors"
 )
 
 func (t *handlerSuite) Test_GetHero_ServiceError() {
 	t.heroService.GetHeroFunc = func(ctx context.Context, id string) (domain.Hero, error) {
-		return domain.Hero{}, errors.New("error getting hero")
+		return domain.Hero{}, errors.HeroNotFound
 	}
-	//configure path params
 	params := []gin.Param{
 		{
 			Key:   "id",
@@ -25,8 +24,8 @@ func (t *handlerSuite) Test_GetHero_ServiceError() {
 
 	MockRequest(t.ctx, params, url.Values{}, http.MethodGet)
 	t.handler.GetHero(t.ctx)
-	t.Equal(http.StatusInternalServerError, t.w.Code)
-	t.Equal("{\"error\":\"error getting hero\"}", t.w.Body.String())
+	t.Equal(http.StatusNotFound, t.w.Code)
+	t.Equal("{\"code\":\"hero_not_found\",\"message\":\"hero not found\"}", t.w.Body.String())
 
 }
 
