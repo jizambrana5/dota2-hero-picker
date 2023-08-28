@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain/hero"
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/repository/database"
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/repository/dataset"
@@ -10,7 +8,6 @@ import (
 )
 
 func main() {
-	r := gin.Default()
 	heroService := hero.NewService(database.NewRepository(database.RedisConfig{
 		Addr:     "localhost:6379",
 		Password: "",
@@ -19,15 +16,8 @@ func main() {
 	}), dataset.NewRepository("./internal/pkg/repository/dataset/dataset.csv"))
 	handler := rest.NewHandler(heroService)
 
-	// API endpoint to fetch all heroes
-	r.GET("/api/heroes", handler.GetAllHeroes)
-	// API endpoint to suggest a random hero based on user preferences
-	r.POST("/api/hero-picker", handler.GetHeroSuggestion)
-	r.GET("/api/dataset", handler.GetDataSet)
-	r.POST("/api/save-heroes", handler.SaveHeroes)
-	r.GET("/api/hero/:id", handler.GetHero)
-
-	err := r.Run(":8080")
+	server := rest.Routes(handler)
+	err := server.Run(":8080")
 	if err != nil {
 		panic(err)
 	}

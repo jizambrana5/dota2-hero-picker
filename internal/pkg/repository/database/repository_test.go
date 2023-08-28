@@ -45,7 +45,7 @@ func (t *databaseTestSuite) SetupTest() {
 	t.dbMock = &MockRedisClient{
 		GetFn: func(ctx context.Context, s string) *redis.StringCmd {
 			rd := redis.NewStringCmd(t.ctx, "hero_test")
-			rd.SetVal(`{"hero_index": 1}`)
+			rd.SetVal(`{"hero_index": "1"}`)
 			return rd
 		},
 		KeysFn: func(ctx context.Context, s string) *redis.StringSliceCmd {
@@ -65,14 +65,16 @@ func (t *databaseTestSuite) Test_NewRepository_Panic() {
 }
 func (t *databaseTestSuite) Test_NewRepository_Success() {
 	t.dbMock = new(MockRedisClient)
-
+	t.dbMock.PingFn = func(ctx context.Context) *redis.StatusCmd {
+		return redis.NewStatusCmd(t.ctx)
+	}
 	defer func() {
 		r := recover()
 		assert.NotNil(t.T(), r)
 		assert.Contains(t.T(), r.(string), "failed to connect to Redis")
 	}()
 	repo := NewRepository(RedisConfig{
-		Addr:     "localhost:6379",
+		Addr:     "localhost:1111",
 		Password: "",
 		DB:       0,
 		Timeout:  time.Second,

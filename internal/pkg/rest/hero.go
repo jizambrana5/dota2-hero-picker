@@ -10,11 +10,15 @@ import (
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain"
 )
 
-type Dataset struct {
-	ID      string `json:"id"`
-	Name    string `json:"name"`
-	Version string `json:"version"`
-	// Add more fields as needed based on your dataset's structure
+// GetHero Handler function to fetch a hero by index
+func (h *Handler) GetHero(c *gin.Context) {
+	id := c.Param("id")
+	hero, err := h.heroService.GetHero(c, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "error getting hero"})
+		return
+	}
+	c.JSON(http.StatusOK, hero)
 }
 
 // GetAllHeroes Handler function to fetch all heroes
@@ -25,6 +29,19 @@ func (h *Handler) GetAllHeroes(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, heroes)
+}
+
+// GetDataSet Handler function to obtain the original data from the dataset
+func (h *Handler) GetDataSet(c *gin.Context) {
+	dataset, err := h.heroService.GetDataSet(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "get data set error"})
+		return
+	}
+	csvBuffer := new(bytes.Buffer)
+	writer := csv.NewWriter(csvBuffer)
+	writer.WriteAll(dataset)
+	c.JSON(http.StatusOK, dataset)
 }
 
 // GetHeroSuggestion Handler function to suggest a random hero based on user preferences
@@ -47,19 +64,6 @@ func (h *Handler) GetHeroSuggestion(c *gin.Context) {
 	c.JSON(http.StatusOK, heroSuggestion)
 }
 
-// GetDataSet Handler function to obtain the original data from the dataset
-func (h *Handler) GetDataSet(c *gin.Context) {
-	dataset, err := h.heroService.GetDataSet(c)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "get data set error"})
-		return
-	}
-	csvBuffer := new(bytes.Buffer)
-	writer := csv.NewWriter(csvBuffer)
-	writer.WriteAll(dataset)
-	c.JSON(http.StatusOK, dataset)
-}
-
 // SaveHeroes Handler function to save all dataset record into the database
 func (h *Handler) SaveHeroes(c *gin.Context) {
 	err := h.heroService.SaveHeroes(c)
@@ -68,15 +72,4 @@ func (h *Handler) SaveHeroes(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, nil)
-}
-
-// GetHero Handler function to fetch a hero by index
-func (h *Handler) GetHero(c *gin.Context) {
-	id := c.Param("id")
-	hero, err := h.heroService.GetHero(c, id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "error getting heroes from dataset"})
-		return
-	}
-	c.JSON(http.StatusOK, hero)
 }

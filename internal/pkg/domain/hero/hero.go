@@ -6,6 +6,14 @@ import (
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain"
 )
 
+func (s Service) GetHero(ctx context.Context, id string) (domain.Hero, error) {
+	hero, err := s.storage.GetHero(ctx, id)
+	if err != nil {
+		return domain.Hero{}, err
+	}
+	return hero, nil
+}
+
 func (s Service) GetAllHeroes(ctx context.Context) ([]domain.Hero, error) {
 	return s.storage.GetAllHeroes(ctx)
 }
@@ -48,14 +56,6 @@ func (s Service) SaveHeroes(ctx context.Context) error {
 		}
 	}
 	return nil
-}
-
-func (s Service) GetHero(ctx context.Context, id string) (domain.Hero, error) {
-	hero, err := s.storage.GetHero(ctx, id)
-	if err != nil {
-		return domain.Hero{}, err
-	}
-	return hero, nil
 }
 
 // Helper function to filter heroes based on user preferences
