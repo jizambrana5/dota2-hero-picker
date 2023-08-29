@@ -1,24 +1,37 @@
 package util
 
-import "github.com/spf13/viper"
+import (
+	"time"
 
-/*type Config struct {
-	Database `json:"database"`
-}*/
+	"github.com/spf13/viper"
+)
 
-type Config struct {
-	Address  string `mapstructure:"DB_ADDRESS"`
-	Password string `mapstructure:"DB_PASSWORD"`
-	Name     int    `mapstructure:"DB"`
-	Timeout  int    `mapstructure:"DB_TIMEOUT"`
-}
+type (
+	Config struct {
+		App     `mapstructure:"app"`
+		Redis   `mapstructure:"redis"`
+		Dataset `mapstructure:"dataset"`
+	}
+	App struct {
+		Port string `mapstructure:"port"`
+	}
+	Redis struct {
+		Address  string        `mapstructure:"address"`
+		Password string        `mapstructure:"password"`
+		Name     int           `mapstructure:"name"`
+		Timeout  time.Duration `mapstructure:"timeout"`
+	}
+	Dataset struct {
+		Path string `mapstructure:"path"`
+	}
+)
 
 func LoadConfig(path string) (config Config, err error) {
 	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
-	viper.SetConfigType("env")
-
+	viper.SetConfigName("local")
+	viper.SetConfigType("yml")
 	viper.AutomaticEnv()
+
 	err = viper.ReadInConfig()
 	if err != nil {
 		return
