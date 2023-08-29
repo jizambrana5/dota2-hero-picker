@@ -1,0 +1,9 @@
+app:
+  port: "8080"
+redis:
+  address: "localhost:6379"
+  password:
+  name: 0
+  timeout: 100000000000000
+dataset:
+  path: "./internal/pkg/repository/dataset/dataset.csv"
