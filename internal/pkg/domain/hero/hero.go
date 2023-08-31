@@ -40,7 +40,7 @@ func (s Service) GetDataSet(ctx context.Context) ([][]string, error) {
 	return records, nil
 }
 
-func (s Service) SaveHeroes(ctx context.Context) error {
+func (s Service) SaveHeroes(ctx context.Context) (err error) {
 	// get records from dataset
 	dataset, err := s.dataset.GetRecords(ctx)
 	if err != nil {
@@ -53,11 +53,16 @@ func (s Service) SaveHeroes(ctx context.Context) error {
 		if i == 0 {
 			continue
 		}
+		winRates, err := domain.BuildWinRates(h)
+		if err != nil {
+
+		}
 		hero := domain.Hero{
 			HeroIndex:        h[0],
 			PrimaryAttribute: h[2],
 			NameInGame:       h[1],
 			Role:             domain.BuildRoles(h[3]),
+			WinRates:         winRates,
 		}
 		err = s.storage.SaveHero(ctx, hero)
 		if err != nil {

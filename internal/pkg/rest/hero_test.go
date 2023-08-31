@@ -41,6 +41,6 @@ func (t *handlerSuite) Test_GetHero_Success() {
 	MockRequest(t.ctx, params, url.Values{}, http.MethodGet)
 	t.handler.GetHero(t.ctx)
 	t.Equal(http.StatusOK, t.w.Code)
-	t.Equal("{\"hero_index\":\"id_test\",\"primary_attr\":\"str\\t\",\"localized_name\":\"Abbadon\",\"roles\":[\"Support\"]}", t.w.Body.String())
+	t.Equal("{\"hero_index\":\"id_test\",\"primary_attr\":\"str\\t\",\"localized_name\":\"Abbadon\",\"roles\":[\"Support\"],\"win_rates\":null}", t.w.Body.String())
 
 }

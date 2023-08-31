@@ -35,6 +35,7 @@ func (t *heroSuite) SetupTest() {
 				PrimaryAttribute: "str	",
 				NameInGame:       "Abbadon",
 				Role:             []domain.Role{"Support"},
+				WinRates:         []domain.Rank{{Name: domain.Herald, Rate: 18.00}},
 			}, nil
 		},
 		SaveHeroFunc: func(ctx context.Context, hero domain.Hero) error {
@@ -43,7 +44,10 @@ func (t *heroSuite) SetupTest() {
 	}
 	t.datasetMock = &mocks.DatasetMock{
 		GetRecordsFunc: func(ctx context.Context) ([][]string, error) {
-			return [][]string{{"ID", "Name", "Primary Attribute", "Roles"}, {"1", "Abbado", "str", "Support"}}, nil
+			return [][]string{
+				{"ID", "Name", "Primary Attribute", "Roles", "", "", "", "", "", "", "", "", "", ""},
+				{"1", "Abbado", "str", "Support", "", "", "45.00", "", "", "45.10", "", "", "45.20", "", "", "45.30", "", "", "45.40", "", "", "45.50"},
+			}, nil
 		}}
 	t.service = NewService(t.storageMock, t.datasetMock)
 }

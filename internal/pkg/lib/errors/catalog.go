@@ -36,4 +36,5 @@ var (
 	HeroSave        = AppError{Err: fmt.Errorf("error saving hero"), httpCode: http.StatusInternalServerError, internalCode: "error_saving_hero"}
 	ErrInvalidInput = AppError{Err: fmt.Errorf("invalid input"), httpCode: http.StatusBadRequest, internalCode: "invalid_input"}
 	GetDataSet      = AppError{Err: fmt.Errorf("error getting dataset"), httpCode: http.StatusInternalServerError, internalCode: "error_getting_dataset"}
+	WinRate         = AppError{Err: fmt.Errorf("error building winrates"), httpCode: http.StatusInternalServerError, internalCode: "error_building_winrates"}
 )
