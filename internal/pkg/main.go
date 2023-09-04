@@ -16,6 +16,11 @@ func main() {
 	if err != nil {
 		log.Fatal("cannot load config", err)
 	}
+	// Set the custom validator for Gin
+	err = rest.SetupValidators()
+	if err != nil {
+		panic(err)
+	}
 
 	heroService := hero.NewService(database.NewRepository(database.RedisConfig{
 		Addr:     config.Redis.Address,

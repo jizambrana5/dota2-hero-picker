@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -20,30 +21,66 @@ const (
 	Archon   RankName = "archon"
 	Legend   RankName = "legend"
 	Ancient  RankName = "ancient"
+
+	Agi Attribute = "agi"
+	Str Attribute = "str"
+	Int Attribute = "int"
+	All Attribute = "all"
 )
 
 type (
 	Hero struct {
-		HeroIndex        string `json:"hero_index"`
-		PrimaryAttribute string `json:"primary_attr"`
-		NameInGame       string `json:"localized_name"`
-		Role             []Role `json:"roles"`
-		WinRates         []Rank `json:"win_rates"`
+		HeroIndex        string    `json:"hero_index"`
+		PrimaryAttribute Attribute `json:"primary_attr"`
+		NameInGame       string    `json:"localized_name"`
+		Role             []Role    `json:"roles"`
+		WinRates         []Rank    `json:"win_rates"`
 	}
 
 	UserPreferences struct {
-		PrimaryAttribute string   `json:"primary_attribute"`
-		Roles            []Role   `json:"roles"`
-		RankName         RankName `json:"rank"`
+		PrimaryAttribute Attribute `json:"primary_attribute" validate:"required,attribute"`
+		Roles            []Role    `json:"roles" validate:"required,dive,role"`
+		RankName         RankName  `json:"rank_name" validate:"required,rank_name"`
 	}
-
-	Role     string
-	RankName string
-	Rank     struct {
+	Heroes    []Hero
+	Role      string
+	RankName  string
+	Attribute string
+	Rank      struct {
 		Name RankName `json:"name"`
 		Rate float64  `json:"rate"`
 	}
 )
+
+func (r Role) IsValid() bool {
+	return r == Carry || r == Disabler || r == Durable || r == Escape ||
+		r == Initiator || r == Nuker || r == Support
+}
+
+func (r RankName) IsValid() bool {
+	return r == Herald || r == Guardian || r == Crusader || r == Archon ||
+		r == Legend || r == Ancient
+}
+
+func (a Attribute) IsValid() bool {
+	return a == Int || a == Str || a == Agi || a == All
+}
+
+func (h Heroes) SortHeroesByWinRate(rankName RankName) []Hero {
+	sort.Slice(h, func(i, j int) bool {
+		return h[i].GetWinRateForRank(rankName) > h[j].GetWinRateForRank(rankName)
+	})
+	return h
+}
+
+func (h Hero) GetWinRateForRank(rankName RankName) float64 {
+	for _, winRate := range h.WinRates {
+		if winRate.Name == rankName {
+			return winRate.Rate
+		}
+	}
+	return 0.0 // Return a default value if the rank name is not found
+}
 
 func BuildRoles(s string) []Role {
 	roleStr := strings.Replace(s, " ", "", -1)

@@ -59,7 +59,7 @@ func (t *databaseTestSuite) SetupTest() {
 }
 
 func (t *databaseTestSuite) Test_NewRepository_Panic() {
-	defer func() { recover() }()
+	defer func() { recover() }() // no lint
 	NewRepository(RedisConfig{})
 	t.Errorf(nil, "should have panicked")
 }
