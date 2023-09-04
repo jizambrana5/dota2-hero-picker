@@ -29,7 +29,8 @@ func (s Service) GetHeroSuggestion(ctx context.Context, userPreferences domain.U
 		return nil, errors.HeroGetAll
 	}
 	// Filter heroes based on user preferences
-	return filterHeroes(userPreferences, heroes), nil
+	heroesToSort := filterHeroes(userPreferences, heroes)
+	return heroesToSort.SortHeroesByWinRate(userPreferences.RankName), nil
 }
 
 func (s Service) GetDataSet(ctx context.Context) ([][]string, error) {
@@ -40,7 +41,7 @@ func (s Service) GetDataSet(ctx context.Context) ([][]string, error) {
 	return records, nil
 }
 
-func (s Service) SaveHeroes(ctx context.Context) error {
+func (s Service) SaveHeroes(ctx context.Context) (err error) {
 	// get records from dataset
 	dataset, err := s.dataset.GetRecords(ctx)
 	if err != nil {
@@ -53,11 +54,16 @@ func (s Service) SaveHeroes(ctx context.Context) error {
 		if i == 0 {
 			continue
 		}
+		winRates, err := domain.BuildWinRates(h)
+		if err != nil {
+			return errors.HeroSave
+		}
 		hero := domain.Hero{
 			HeroIndex:        h[0],
-			PrimaryAttribute: h[2],
+			PrimaryAttribute: domain.Attribute(h[2]),
 			NameInGame:       h[1],
 			Role:             domain.BuildRoles(h[3]),
+			WinRates:         winRates,
 		}
 		err = s.storage.SaveHero(ctx, hero)
 		if err != nil {
@@ -68,9 +74,8 @@ func (s Service) SaveHeroes(ctx context.Context) error {
 }
 
 // Helper function to filter heroes based on user preferences
-func filterHeroes(preferences domain.UserPreferences, heroes []domain.Hero) []domain.Hero {
+func filterHeroes(preferences domain.UserPreferences, heroes []domain.Hero) domain.Heroes {
 	var filtered []domain.Hero
-
 	for _, hero := range heroes {
 		if hero.PrimaryAttribute == preferences.PrimaryAttribute {
 			if hasAllRoles(hero.Role, preferences.Roles) {

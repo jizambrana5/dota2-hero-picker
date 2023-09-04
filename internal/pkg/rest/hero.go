@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain"
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/lib/errors"
@@ -20,14 +21,6 @@ func (h *Handler) GetHero(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, hero)
-}
-
-func handleError(c *gin.Context, err error) {
-	if customErr, ok := err.(errors.CustomError); ok {
-		c.JSON(customErr.HTTPCode(), gin.H{"code": customErr.InternalCode(), "message": customErr.Error()})
-	} else {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
-	}
 }
 
 // GetAllHeroes Handler function to fetch all heroes
@@ -49,7 +42,11 @@ func (h *Handler) GetDataSet(c *gin.Context) {
 	}
 	csvBuffer := new(bytes.Buffer)
 	writer := csv.NewWriter(csvBuffer)
-	writer.WriteAll(dataset)
+	err = writer.WriteAll(dataset)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "write all dataset"})
+		return
+	}
 	c.JSON(http.StatusOK, dataset)
 }
 
@@ -58,7 +55,11 @@ func (h *Handler) GetHeroSuggestion(c *gin.Context) {
 	var userPreferences domain.UserPreferences
 	// Bind the JSON data from the request body to userPreferences struct
 	if err := c.ShouldBindJSON(&userPreferences); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON data"})
+		// Handle validation errors
+		errorMsgs := handleShouldBindJSONErrors(err.(validator.ValidationErrors))
+		c.JSON(http.StatusBadRequest, gin.H{
+			"errors": errorMsgs,
+		})
 		return
 	}
 
@@ -69,6 +70,7 @@ func (h *Handler) GetHeroSuggestion(c *gin.Context) {
 	}
 	if heroSuggestion == nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "No hero found matching the criteria"})
+		return
 	}
 	c.JSON(http.StatusOK, heroSuggestion)
 }
@@ -81,4 +83,12 @@ func (h *Handler) SaveHeroes(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, nil)
+}
+
+func handleError(c *gin.Context, err error) {
+	if customErr, ok := err.(errors.CustomError); ok {
+		c.JSON(customErr.HTTPCode(), gin.H{"code": customErr.InternalCode(), "message": customErr.Error()})
+	} else {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+	}
 }

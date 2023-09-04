@@ -65,6 +65,38 @@ curl http://localhost:8080/api/heroes
 curl -X POST -H "Content-Type: application/json" -d '{"primary_attribute": "agi", "roles": ["Carry", "Disabler"]}' http://localhost:8080/api/hero-picker
 ```
 
+## Error Handling
+
+Effective error handling is a cornerstone of building robust and user-friendly APIs. In this project, we employ a structured approach to error handling using custom error types, allowing us to provide clear error responses to clients. Each error type is associated with an HTTP status code and an internal code for easy identification and resolution.
+
+### Custom Error Types
+
+Inside the `errors` package, we define custom error types that conform to the `CustomError` interface. This interface outlines methods for obtaining the HTTP status code and internal code of an error.
+
+The `AppError` struct is the foundation of our custom error types. It encapsulates an underlying error, an HTTP status code, and an internal code. This struct is designed to provide detailed error information while maintaining compatibility with the built-in `error` interface.
+
+```go
+package errors
+
+import (
+    "fmt"
+    "net/http"
+)
+
+type CustomError interface {
+    error
+    HTTPCode() int
+    InternalCode() string
+}
+
+type AppError struct {
+    Err          error
+    httpCode     int
+    internalCode string
+}
+```
+
+
 ## Concurrency
 
 The API utilizes Goroutines for concurrent filtering and hero selection, ensuring improved performance and responsiveness.
