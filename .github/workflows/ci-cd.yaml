@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Create cmd/myapp Directory
+        run: mkdir -p cmd/myapp
+
       - name: Checkout Code
         uses: actions/checkout@v2
 
