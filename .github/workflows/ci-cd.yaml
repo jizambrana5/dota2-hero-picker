@@ -2,33 +2,66 @@ name: CI/CD Pipeline
 
 on:
   pull_request:
-    branches:
+    branch:
       - master
     types:
       - opened
       - synchronize
+  workflow_dispatch:
 
+permissions:
+  actions: write
+  checks: write
+  contents: write
+  deployments: write
+  issues: write
+  packages: write
+  pull-requests: write
+  repository-projects: write
+  security-events: write
+  statuses: write
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Create cmd/myapp Directory
-        run: mkdir -p cmd/myapp
-
-      - name: Set up Go
-        uses: actions/setup-go@v2
+      - name: Setup GO
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.x # Choose your Go version
+          go-version: oldstable
+          cache: true
 
-      - name: Run Tests
-        run: go test ./...
+      - name: Get dependencies
+        run:
+          |
+          go get -v -t -d ./...
 
-      - name: Build Application
-        run: go build ./...
+      - name: Code quality - golangci-linter
+        uses: golangci/golangci-lint-action@v3
+        with:
+          # Require: The version of golangci-lint to use.
+          # When `install-mode` is `binary` (default) the value can be v1.2 or v1.2.3 or `latest` to use the latest version.
+          # When `install-mode` is `goinstall` the value can be v1.2.3, `latest`, or the hash of a commit.
+          version: v1.54
+
+      - name: Build
+        run: go build -v -tags dev ./...
+
+      - name: Test
+        run: go test -v -short ./...
+
+      - name: Update coverage report
+        uses: ncruces/go-coverage-report@v0
+        with:
+          report: 'true'
+          chart: 'true'
+          amend: 'false'
+          if: |
+            matrix.os == 'ubuntu-latest' &&
+            github.event_name == 'push'
+          continue-on-error: true
 
       - name: Deploy to Production
         if: success()

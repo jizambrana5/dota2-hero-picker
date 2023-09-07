@@ -123,3 +123,7 @@ Please customize the placeholders (`your-username`, `your_kaggle_api_key`, etc.)
 The README file serves as the primary documentation for your project and helps users and potential employers understand how to use and set up your API. It includes information about installation, API endpoints, sample usage, concurrency, and deployment. Additionally, it provides license details and acknowledgments.
 
 Feel free to enhance the README with additional sections, badges, or more detailed instructions as needed. A well-written README is crucial for project visibility and a positive user experience.
+
+
+## Coverage report
+[![Go Coverage](https://github.com/USER/REPO/wiki/coverage.svg)](https://raw.githack.com/wiki/USER/REPO/coverage.html)
