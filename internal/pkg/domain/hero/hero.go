@@ -73,6 +73,10 @@ func (s Service) SaveHeroes(ctx context.Context) (err error) {
 	return nil
 }
 
+func (s Service) GetHeroBenchmark(ctx context.Context, id string) (interface{}, error) {
+	return s.benchmark.GetHeroBenchmark(ctx, id)
+}
+
 // Helper function to filter heroes based on user preferences
 func filterHeroes(preferences domain.UserPreferences, heroes []domain.Hero) domain.Heroes {
 	var filtered []domain.Hero

@@ -11,6 +11,7 @@ type (
 		App     `mapstructure:"app"`
 		Redis   `mapstructure:"redis"`
 		Dataset `mapstructure:"dataset"`
+		Client  `mapstructure:"client"`
 	}
 	App struct {
 		Port string `mapstructure:"port"`
@@ -23,6 +24,11 @@ type (
 	}
 	Dataset struct {
 		Path string `mapstructure:"path"`
+	}
+	Client struct {
+		Timeout  time.Duration `mapstructure:"timeout"`
+		BasePath string        `mapstructure:"base_path"`
+		Retries  int           `mapstructure:"retries"`
 	}
 )
 

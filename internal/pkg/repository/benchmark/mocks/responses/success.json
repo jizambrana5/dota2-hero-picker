@@ -1,0 +1,59 @@
+{
+  "hero_id": 1,
+  "result": {
+    "gold_per_min": [
+      {
+        "percentile": 0.1,
+        "value": 485
+      }
+    ],
+    "hero_damage_per_min": [
+      {
+        "percentile": 0.1,
+        "value": 222.08744710860367
+      }
+    ],
+    "hero_healing_per_min": [
+      {
+        "percentile": 0.1,
+        "value": 0
+      }
+    ],
+    "kills_per_min": [
+      {
+        "percentile": 0.1,
+        "value": 0.05908419497784343
+      }
+    ],
+    "last_hits_per_min": [
+      {
+        "percentile": 0.1,
+        "value": 5.795768169273229
+      }
+    ],
+    "lhten": [
+      {
+        "percentile": 0.1,
+        "value": 24
+      }
+    ],
+    "stuns_per_min": [
+      {
+        "percentile": 0.1,
+        "value": 0.07290034904270988
+      }
+    ],
+    "tower_damage": [
+      {
+        "percentile": 0.1,
+        "value": 0
+      }
+    ],
+    "xp_per_min": [
+      {
+        "percentile": 0.1,
+        "value": 551
+      }
+    ]
+  }
+}

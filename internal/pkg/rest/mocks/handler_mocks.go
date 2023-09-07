@@ -24,6 +24,9 @@ import (
 //			GetHeroFunc: func(ctx context.Context, id string) (domain.Hero, error) {
 //				panic("mock out the GetHero method")
 //			},
+//			GetHeroBenchmarkFunc: func(ctx context.Context, id string) (interface{}, error) {
+//				panic("mock out the GetHeroBenchmark method")
+//			},
 //			GetHeroSuggestionFunc: func(ctx context.Context, preferences domain.UserPreferences) ([]domain.Hero, error) {
 //				panic("mock out the GetHeroSuggestion method")
 //			},
@@ -45,6 +48,9 @@ type HeroServiceMock struct {
 
 	// GetHeroFunc mocks the GetHero method.
 	GetHeroFunc func(ctx context.Context, id string) (domain.Hero, error)
+
+	// GetHeroBenchmarkFunc mocks the GetHeroBenchmark method.
+	GetHeroBenchmarkFunc func(ctx context.Context, id string) (interface{}, error)
 
 	// GetHeroSuggestionFunc mocks the GetHeroSuggestion method.
 	GetHeroSuggestionFunc func(ctx context.Context, preferences domain.UserPreferences) ([]domain.Hero, error)
@@ -71,6 +77,13 @@ type HeroServiceMock struct {
 			// ID is the id argument value.
 			ID string
 		}
+		// GetHeroBenchmark holds details about calls to the GetHeroBenchmark method.
+		GetHeroBenchmark []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// ID is the id argument value.
+			ID string
+		}
 		// GetHeroSuggestion holds details about calls to the GetHeroSuggestion method.
 		GetHeroSuggestion []struct {
 			// Ctx is the ctx argument value.
@@ -87,6 +100,7 @@ type HeroServiceMock struct {
 	lockGetAllHeroes      sync.RWMutex
 	lockGetDataSet        sync.RWMutex
 	lockGetHero           sync.RWMutex
+	lockGetHeroBenchmark  sync.RWMutex
 	lockGetHeroSuggestion sync.RWMutex
 	lockSaveHeroes        sync.RWMutex
 }
@@ -188,6 +202,42 @@ func (mock *HeroServiceMock) GetHeroCalls() []struct {
 	mock.lockGetHero.RLock()
 	calls = mock.calls.GetHero
 	mock.lockGetHero.RUnlock()
+	return calls
+}
+
+// GetHeroBenchmark calls GetHeroBenchmarkFunc.
+func (mock *HeroServiceMock) GetHeroBenchmark(ctx context.Context, id string) (interface{}, error) {
+	if mock.GetHeroBenchmarkFunc == nil {
+		panic("HeroServiceMock.GetHeroBenchmarkFunc: method is nil but HeroService.GetHeroBenchmark was just called")
+	}
+	callInfo := struct {
+		Ctx context.Context
+		ID  string
+	}{
+		Ctx: ctx,
+		ID:  id,
+	}
+	mock.lockGetHeroBenchmark.Lock()
+	mock.calls.GetHeroBenchmark = append(mock.calls.GetHeroBenchmark, callInfo)
+	mock.lockGetHeroBenchmark.Unlock()
+	return mock.GetHeroBenchmarkFunc(ctx, id)
+}
+
+// GetHeroBenchmarkCalls gets all the calls that were made to GetHeroBenchmark.
+// Check the length with:
+//
+//	len(mockedHeroService.GetHeroBenchmarkCalls())
+func (mock *HeroServiceMock) GetHeroBenchmarkCalls() []struct {
+	Ctx context.Context
+	ID  string
+} {
+	var calls []struct {
+		Ctx context.Context
+		ID  string
+	}
+	mock.lockGetHeroBenchmark.RLock()
+	calls = mock.calls.GetHeroBenchmark
+	mock.lockGetHeroBenchmark.RUnlock()
 	return calls
 }
 

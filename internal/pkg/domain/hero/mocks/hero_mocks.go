@@ -232,3 +232,71 @@ func (mock *DatasetMock) GetRecordsCalls() []struct {
 	mock.lockGetRecords.RUnlock()
 	return calls
 }
+
+// BenchmarkMock is a mock implementation of hero.Benchmark.
+//
+//	func TestSomethingThatUsesBenchmark(t *testing.T) {
+//
+//		// make and configure a mocked hero.Benchmark
+//		mockedBenchmark := &BenchmarkMock{
+//			GetHeroBenchmarkFunc: func(ctx context.Context, id string) (interface{}, error) {
+//				panic("mock out the GetHeroBenchmark method")
+//			},
+//		}
+//
+//		// use mockedBenchmark in code that requires hero.Benchmark
+//		// and then make assertions.
+//
+//	}
+type BenchmarkMock struct {
+	// GetHeroBenchmarkFunc mocks the GetHeroBenchmark method.
+	GetHeroBenchmarkFunc func(ctx context.Context, id string) (interface{}, error)
+
+	// calls tracks calls to the methods.
+	calls struct {
+		// GetHeroBenchmark holds details about calls to the GetHeroBenchmark method.
+		GetHeroBenchmark []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// ID is the id argument value.
+			ID string
+		}
+	}
+	lockGetHeroBenchmark sync.RWMutex
+}
+
+// GetHeroBenchmark calls GetHeroBenchmarkFunc.
+func (mock *BenchmarkMock) GetHeroBenchmark(ctx context.Context, id string) (interface{}, error) {
+	if mock.GetHeroBenchmarkFunc == nil {
+		panic("BenchmarkMock.GetHeroBenchmarkFunc: method is nil but Benchmark.GetHeroBenchmark was just called")
+	}
+	callInfo := struct {
+		Ctx context.Context
+		ID  string
+	}{
+		Ctx: ctx,
+		ID:  id,
+	}
+	mock.lockGetHeroBenchmark.Lock()
+	mock.calls.GetHeroBenchmark = append(mock.calls.GetHeroBenchmark, callInfo)
+	mock.lockGetHeroBenchmark.Unlock()
+	return mock.GetHeroBenchmarkFunc(ctx, id)
+}
+
+// GetHeroBenchmarkCalls gets all the calls that were made to GetHeroBenchmark.
+// Check the length with:
+//
+//	len(mockedBenchmark.GetHeroBenchmarkCalls())
+func (mock *BenchmarkMock) GetHeroBenchmarkCalls() []struct {
+	Ctx context.Context
+	ID  string
+} {
+	var calls []struct {
+		Ctx context.Context
+		ID  string
+	}
+	mock.lockGetHeroBenchmark.RLock()
+	calls = mock.calls.GetHeroBenchmark
+	mock.lockGetHeroBenchmark.RUnlock()
+	return calls
+}
