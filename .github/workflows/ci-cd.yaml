@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create cmd/myapp Directory
-        run: mkdir -p cmd/myapp
-
       - name: Checkout Code
         uses: actions/checkout@v2
+
+      - name: Create cmd/myapp Directory
+        run: mkdir -p cmd/myapp
 
       - name: Set up Go
         uses: actions/setup-go@v2
@@ -25,7 +25,7 @@ jobs:
         run: go test ./...
 
       - name: Build Application
-        run: go build -o myapp ./cmd/myapp
+        run: go build ./...
 
       - name: Deploy to Production
         if: success()
