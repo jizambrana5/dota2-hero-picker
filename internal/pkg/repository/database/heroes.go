@@ -28,7 +28,6 @@ func (r *Repository) GetHero(ctx context.Context, id string) (domain.Hero, error
 			return domain.Hero{}, fmt.Errorf("failed to get hero from Redis: %w", err)
 		}
 
-		fmt.Printf("Retrieved hero: %+v\n", hero)
 	} else {
 		fmt.Println("No JSON data retrieved")
 		return domain.Hero{}, fmt.Errorf("no JSON data retrieved: %w", err)
