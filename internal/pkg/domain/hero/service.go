@@ -1,4 +1,4 @@
-//go:generate moq -pkg mocks -out ./mocks/hero_mocks.go -skip-ensure . Storage Dataset
+//go:generate moq -pkg mocks -out ./mocks/hero_mocks.go -skip-ensure . Storage Dataset Benchmark
 package hero
 
 import (
@@ -10,8 +10,9 @@ import (
 
 type (
 	Service struct {
-		storage Storage
-		dataset Dataset
+		storage   Storage
+		dataset   Dataset
+		benchmark Benchmark
 	}
 	Storage interface {
 		GetHero(ctx context.Context, id string) (domain.Hero, error)
@@ -21,10 +22,13 @@ type (
 	Dataset interface {
 		GetRecords(ctx context.Context) ([][]string, error)
 	}
+	Benchmark interface {
+		GetHeroBenchmark(ctx context.Context, id string) (interface{}, error)
+	}
 )
 
 var _ rest.HeroService = (*Service)(nil)
 
-func NewService(storage Storage, dataset Dataset) *Service {
-	return &Service{storage: storage, dataset: dataset}
+func NewService(storage Storage, dataset Dataset, benchmark Benchmark) *Service {
+	return &Service{storage: storage, dataset: dataset, benchmark: benchmark}
 }

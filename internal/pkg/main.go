@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain/hero"
+	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/repository/benchmark"
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/repository/database"
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/repository/dataset"
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/rest"
@@ -27,7 +28,11 @@ func main() {
 		Password: config.Redis.Password,
 		DB:       config.Redis.Name,
 		Timeout:  config.Redis.Timeout,
-	}), dataset.NewRepository(config.Dataset.Path))
+	}), dataset.NewRepository(config.Dataset.Path), benchmark.NewRepository(benchmark.Config{
+		Timeout:  config.Client.Timeout,
+		BasePath: config.Client.BasePath,
+		Retries:  config.Client.Retries,
+	}))
 	handler := rest.NewHandler(heroService)
 
 	server := rest.Routes(handler)

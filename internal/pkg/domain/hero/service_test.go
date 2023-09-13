@@ -15,6 +15,7 @@ type heroSuite struct {
 	ctx         context.Context
 	storageMock *mocks.StorageMock
 	datasetMock *mocks.DatasetMock
+	benchmark   *mocks.BenchmarkMock
 	service     *Service
 }
 
@@ -49,11 +50,12 @@ func (t *heroSuite) SetupTest() {
 				{"1", "Abbado", "str", "Support", "", "", "45.00", "", "", "45.10", "", "", "45.20", "", "", "45.30", "", "", "45.40", "", "", "45.50"},
 			}, nil
 		}}
-	t.service = NewService(t.storageMock, t.datasetMock)
+	t.benchmark = &mocks.BenchmarkMock{}
+	t.service = NewService(t.storageMock, t.datasetMock, t.benchmark)
 }
 
 func (t *heroSuite) Test_NewService() {
-	t.NotNil(NewService(t.storageMock, t.datasetMock))
+	t.NotNil(NewService(t.storageMock, t.datasetMock, t.benchmark))
 }
 
 func TestHero(t *testing.T) {

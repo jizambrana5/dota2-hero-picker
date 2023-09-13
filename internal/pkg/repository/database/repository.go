@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+
+	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain/hero"
 )
 
 // RedisConfig holds the configuration needed to connect to Redis.
@@ -26,6 +28,8 @@ type Database interface {
 	Ping(ctx context.Context) *redis.StatusCmd
 	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd
 }
+
+var _ hero.Storage = (*Repository)(nil)
 
 func NewRepository(config RedisConfig) *Repository {
 	rdb := redis.NewClient(&redis.Options{

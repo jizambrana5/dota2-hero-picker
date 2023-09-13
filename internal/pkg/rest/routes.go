@@ -23,5 +23,6 @@ func Routes(handler *Handler) *gin.Engine {
 	r.GET("/api/dataset", handler.GetDataSet)
 	r.POST("/api/save-heroes", handler.SaveHeroes)
 	r.GET("/api/hero/:id", handler.GetHero)
+	r.GET("/api/hero/:id/benchmark", handler.GetHeroBenchmark)
 	return r
 }
