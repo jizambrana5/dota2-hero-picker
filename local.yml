@@ -1,5 +1,5 @@
 app:
-  port: "8080"
+  port: "8081"
 redis:
   address: "localhost:6379"
   password:
@@ -7,3 +7,7 @@ redis:
   timeout: 100000000000000
 dataset:
   path: "./internal/pkg/repository/dataset/dataset.csv"
+client:
+  timeout: 50000000000000
+  retries: 4
+  base_path: "https://api.opendota.com/api/benchmarks"

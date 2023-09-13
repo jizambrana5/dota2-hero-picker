@@ -6,7 +6,23 @@ The Dota 2 Advanced Hero Picker API is a Golang-based backend web service that s
 
 - Golang 1.19 or later
 - PostgreSQL database
-- Kaggle API key (to fetch initial hero data)
+- Kaggle dataset: https://www.kaggle.com/datasets/nihalbarua/dota2-hero-preference-by-mmr
+
+
+### Implementations
+- API rest with Gin gonic framework. 
+- Redis database to store heroes. 
+- CSV file handling 
+- Error handling 
+- GitHub Actions: Pipeline 
+- Logging 
+- Concurrency 
+- HTTP Client (Heimdall)
+- GRPC 
+- Producer-consumer 
+- Monitoring 
+- Authentication & authorization
+
 
 ## Installation and Setup
 
@@ -77,11 +93,6 @@ The `AppError` struct is the foundation of our custom error types. It encapsulat
 
 ```go
 package errors
-
-import (
-    "fmt"
-    "net/http"
-)
 
 type CustomError interface {
     error

@@ -85,6 +85,16 @@ func (h *Handler) SaveHeroes(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
+func (h *Handler) GetHeroBenchmark(c *gin.Context) {
+	id := c.Param("id")
+	hero, err := h.heroService.GetHeroBenchmark(c, id)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, hero)
+}
+
 func handleError(c *gin.Context, err error) {
 	if customErr, ok := err.(errors.CustomError); ok {
 		c.JSON(customErr.HTTPCode(), gin.H{"code": customErr.InternalCode(), "message": customErr.Error()})
