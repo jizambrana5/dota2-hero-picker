@@ -2,6 +2,7 @@ package rest
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func Routes(handler *Handler) *gin.Engine {
@@ -24,5 +25,9 @@ func Routes(handler *Handler) *gin.Engine {
 	r.POST("/api/save-heroes", handler.SaveHeroes)
 	r.GET("/api/hero/:id", handler.GetHero)
 	r.GET("/api/hero/:id/benchmark", handler.GetHeroBenchmark)
+
+	//Monitoring
+	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
 	return r
 }

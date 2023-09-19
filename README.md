@@ -10,18 +10,18 @@ The Dota 2 Advanced Hero Picker API is a Golang-based backend web service that s
 
 
 ### Implementations
-- API rest with Gin gonic framework. 
-- Redis database to store heroes. 
-- CSV file handling 
-- Error handling 
-- GitHub Actions: Pipeline 
-- Logging 
-- Concurrency 
-- HTTP Client (Heimdall)
-- GRPC 
-- Producer-consumer 
-- Monitoring 
-- Authentication & authorization
+- [X] API rest with Gin gonic framework.
+- [X] Redis database to store heroes. 
+- [X] CSV file handling 
+- [X] Error handling 
+- [X] GitHub Actions: Pipeline 
+- [X] Logging 
+- [ ] Concurrency 
+- [X] HTTP Client (Heimdall)
+- [ ] GRPC 
+- [ ] Producer-consumer 
+- [ ] Monitoring 
+- [ ] Authentication & authorization
 
 
 ## Installation and Setup
