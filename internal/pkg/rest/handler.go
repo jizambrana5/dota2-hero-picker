@@ -3,6 +3,9 @@ package rest
 
 import (
 	"context"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain"
 )
@@ -24,4 +27,8 @@ func NewHandler(heroService HeroService) *Handler {
 	return &Handler{
 		heroService: heroService,
 	}
+}
+
+func (h *Handler) Ping(c *gin.Context) {
+	c.JSON(http.StatusOK, "pong")
 }
