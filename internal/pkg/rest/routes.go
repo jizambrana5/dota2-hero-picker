@@ -16,6 +16,11 @@ func Routes(handler *Handler) *gin.Engine {
 
 	// Use the custom logging middleware for all routes
 	r.Use(loggingMiddleware(logger))
+	// Use the MetricsMiddleware
+	r.Use(MetricsMiddleware())
+
+	// Ping
+	r.GET("/ping", handler.Ping)
 
 	// API endpoint to fetch all heroes
 	r.GET("/api/heroes", handler.GetAllHeroes)

@@ -1,0 +1,13 @@
+{
+  "apiVersion": 1,
+  "datasources": [
+    {
+      "name": "Dota 2 hero picker",
+      "type": "prometheus",
+      "access": "proxy",
+      "url": "http://prometheus:9090",
+      "basicAuth": false,
+      "isDefault": true
+    }
+  ]
+}

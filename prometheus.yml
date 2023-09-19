@@ -2,6 +2,9 @@ global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'go-app'
+  - job_name: 'hero-picker'
     static_configs:
-      - targets: ['127.0.0.1:8081'] # Replace with your Go application's host and port
+      - targets: ['hero-picker:8081']
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']

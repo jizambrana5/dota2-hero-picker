@@ -6,11 +6,29 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 const dateFormat = "2006-01-02T15:04:05"
+
+var (
+	httpRequestsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_requests_total",
+			Help: "Total number of HTTP requests.",
+		},
+		[]string{"method", "path", "status"},
+	)
+	httpRequestDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name: "http_request_duration_seconds",
+			Help: "Duration of HTTP requests in seconds.",
+		},
+		[]string{"method", "path"},
+	)
+)
 
 func setupLogger() (*zap.Logger, error) {
 	// Check the environment (e.g., "development" or "production")
@@ -80,5 +98,44 @@ func loggingMiddleware(logger *zap.Logger) gin.HandlerFunc {
 			zap.Duration("processing_time", time.Since(startTime)),
 			zap.Time("timestamp", time.Now()), // Include date and time
 		)
+	}
+}
+
+func MetricsMiddleware() gin.HandlerFunc {
+	// Register the counter with Prometheus
+	prometheus.MustRegister(httpRequestsTotal, httpRequestDuration)
+	return func(c *gin.Context) {
+		startTime := time.Now()
+
+		// Process the request
+		c.Next()
+
+		// Calculate request duration
+		duration := time.Since(startTime).Seconds()
+
+		// Increment the total requests counter
+		// Use the getStatusString function to get the string representation of the status code.
+		httpRequestsTotal.WithLabelValues(c.Request.Method, c.FullPath(), getStatusString(c.Writer.Status())).Inc()
+
+		// Observe request duration
+		httpRequestDuration.WithLabelValues(c.Request.Method, c.FullPath()).Observe(duration)
+	}
+}
+
+// Define a function to map integer status codes to string representations.
+func getStatusString(status int) string {
+	switch status {
+	case 200:
+		return "200"
+	case 201:
+		return "201"
+	case 400:
+		return "400"
+	case 404:
+		return "404"
+	case 500:
+		return "500"
+	default:
+		return "other"
 	}
 }
