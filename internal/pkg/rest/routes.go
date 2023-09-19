@@ -5,7 +5,17 @@ import (
 )
 
 func Routes(handler *Handler) *gin.Engine {
+	//Set up the logger based on the environment
+	logger, err := setupLogger()
+	if err != nil {
+		panic(err)
+	}
+
 	r := gin.Default()
+
+	// Use the custom logging middleware for all routes
+	r.Use(loggingMiddleware(logger))
+
 	// API endpoint to fetch all heroes
 	r.GET("/api/heroes", handler.GetAllHeroes)
 	// API endpoint to suggest a random hero based on user preferences
