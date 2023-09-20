@@ -42,3 +42,6 @@ _cgo_export.*
 .vscode
 /coverage/coverage.json
 /coverage/index.html
+
+## Grafaba
+/grafana/*

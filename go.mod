@@ -11,7 +11,8 @@ require (
 	github.com/redis/go-redis/v9 v9.0.5
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.3
-	go.uber.org/zap v1.21.0
+	go.elastic.co/ecszap v1.0.2
+	go.uber.org/zap v1.24.0
 )
 
 require (

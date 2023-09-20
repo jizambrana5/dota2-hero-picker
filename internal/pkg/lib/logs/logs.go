@@ -1,28 +1,38 @@
 package logs
 
 import (
-	"log"
+	"errors"
+	"math/rand"
+	"os"
+	"time"
 
+	"go.elastic.co/ecszap"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 var Logger *zap.Logger
 
 // InitLogger initializes the logger.
 func InitLogger(environment string) {
-	var cfg zap.Config
-
-	if environment == "development" {
-		cfg = zap.NewDevelopmentConfig()
-	} else {
-		cfg = zap.NewProductionConfig()
-	}
-
-	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-	logger, err := cfg.Build()
-	if err != nil {
-		log.Panic("Failed to create logger: " + err.Error())
-	}
+	encoderConfig := ecszap.NewDefaultEncoderConfig()
+	core := ecszap.NewCore(encoderConfig, os.Stdout, zap.DebugLevel)
+	logger := zap.New(core, zap.AddCaller())
+	logger = logger.With(zap.String("app", "myapp")).With(zap.String("environment", "psm"))
 	Logger = logger
+	go func() {
+		count := 0
+		for {
+
+			if rand.Float32() > 0.8 {
+				logger.Error("oops...something is wrong",
+					zap.Int("count", count),
+					zap.Error(errors.New("error details")))
+			} else {
+				logger.Info("everything is fine",
+					zap.Int("count", count))
+			}
+			count++
+			time.Sleep(time.Second * 2)
+		}
+	}()
 }
