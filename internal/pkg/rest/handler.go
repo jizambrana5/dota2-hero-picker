@@ -20,7 +20,8 @@ type HeroService interface {
 	GetDataSet(ctx context.Context) ([][]string, error)
 	GetHeroSuggestion(ctx context.Context, preferences domain.UserPreferences) ([]domain.Hero, error)
 	SaveHeroes(ctx context.Context) error
-	GetHeroBenchmark(ctx context.Context, id string) (interface{}, error)
+	GetHeroBenchmark(ctx context.Context, heroID string) (interface{}, error)
+	GetFullHeroInfo(ctx context.Context, heroID string) (domain.FullHeroInfo, error)
 }
 
 func NewHandler(heroService HeroService) *Handler {

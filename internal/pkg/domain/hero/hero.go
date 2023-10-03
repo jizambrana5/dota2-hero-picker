@@ -11,6 +11,17 @@ import (
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/lib/logs"
 )
 
+type (
+	benchCn struct {
+		benchmark interface{}
+		err       error
+	}
+	heroCh struct {
+		hero domain.Hero
+		err  error
+	}
+)
+
 func (s Service) GetHero(ctx context.Context, id string) (domain.Hero, error) {
 	hero, err := s.storage.GetHero(ctx, id)
 	if err != nil {
@@ -119,6 +130,28 @@ func (s Service) GetHeroBenchmark(ctx context.Context, id string) (interface{}, 
 	return s.benchmark.GetHeroBenchmark(ctx, id)
 }
 
+func (s Service) GetFullHeroInfo(ctx context.Context, heroID string) (domain.FullHeroInfo, error) {
+	benchCh := s.getHeroBenchmark(ctx, heroID)
+	heroStorageCh := s.getHeroStorage(ctx, heroID)
+
+	var response domain.FullHeroInfo
+	for i := 0; i < 2; i++ {
+		select {
+		case msg := <-benchCh:
+			if msg.err != nil {
+				return domain.FullHeroInfo{}, msg.err
+			}
+			response.Benchmark = msg.benchmark
+		case msg := <-heroStorageCh:
+			if msg.err != nil {
+				return domain.FullHeroInfo{}, msg.err
+			}
+			response.Hero = msg.hero
+		}
+	}
+	return response, nil
+}
+
 // Helper function to filter heroes based on user preferences
 func filterHeroes(preferences domain.UserPreferences, heroes []domain.Hero) domain.Heroes {
 	var filtered []domain.Hero
@@ -150,4 +183,28 @@ func contains(slice []domain.Role, str domain.Role) bool {
 		}
 	}
 	return false
+}
+
+func (s Service) getHeroBenchmark(ctx context.Context, heroID string) chan benchCn {
+	out := make(chan benchCn, 1)
+	go func() {
+		bench, err := s.benchmark.GetHeroBenchmark(ctx, heroID)
+		out <- benchCn{
+			benchmark: bench,
+			err:       err,
+		}
+	}()
+	return out
+}
+
+func (s Service) getHeroStorage(ctx context.Context, heroID string) chan heroCh {
+	out := make(chan heroCh, 1)
+	go func() {
+		hero, err := s.storage.GetHero(ctx, heroID)
+		out <- heroCh{
+			hero: hero,
+			err:  err,
+		}
+	}()
+	return out
 }

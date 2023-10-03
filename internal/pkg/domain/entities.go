@@ -50,6 +50,10 @@ type (
 		Name RankName `json:"name"`
 		Rate float64  `json:"rate"`
 	}
+	FullHeroInfo struct {
+		Hero      Hero        `json:"hero"`
+		Benchmark interface{} `json:"benchmark"`
+	}
 )
 
 func (r Role) IsValid() bool {
