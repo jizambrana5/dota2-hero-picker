@@ -21,10 +21,13 @@ import (
 //			GetDataSetFunc: func(ctx context.Context) ([][]string, error) {
 //				panic("mock out the GetDataSet method")
 //			},
+//			GetFullHeroInfoFunc: func(ctx context.Context, heroID string) (domain.FullHeroInfo, error) {
+//				panic("mock out the GetFullHeroInfo method")
+//			},
 //			GetHeroFunc: func(ctx context.Context, id string) (domain.Hero, error) {
 //				panic("mock out the GetHero method")
 //			},
-//			GetHeroBenchmarkFunc: func(ctx context.Context, id string) (interface{}, error) {
+//			GetHeroBenchmarkFunc: func(ctx context.Context, heroID string) (interface{}, error) {
 //				panic("mock out the GetHeroBenchmark method")
 //			},
 //			GetHeroSuggestionFunc: func(ctx context.Context, preferences domain.UserPreferences) ([]domain.Hero, error) {
@@ -46,11 +49,14 @@ type HeroServiceMock struct {
 	// GetDataSetFunc mocks the GetDataSet method.
 	GetDataSetFunc func(ctx context.Context) ([][]string, error)
 
+	// GetFullHeroInfoFunc mocks the GetFullHeroInfo method.
+	GetFullHeroInfoFunc func(ctx context.Context, heroID string) (domain.FullHeroInfo, error)
+
 	// GetHeroFunc mocks the GetHero method.
 	GetHeroFunc func(ctx context.Context, id string) (domain.Hero, error)
 
 	// GetHeroBenchmarkFunc mocks the GetHeroBenchmark method.
-	GetHeroBenchmarkFunc func(ctx context.Context, id string) (interface{}, error)
+	GetHeroBenchmarkFunc func(ctx context.Context, heroID string) (interface{}, error)
 
 	// GetHeroSuggestionFunc mocks the GetHeroSuggestion method.
 	GetHeroSuggestionFunc func(ctx context.Context, preferences domain.UserPreferences) ([]domain.Hero, error)
@@ -70,6 +76,13 @@ type HeroServiceMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 		}
+		// GetFullHeroInfo holds details about calls to the GetFullHeroInfo method.
+		GetFullHeroInfo []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// HeroID is the heroID argument value.
+			HeroID string
+		}
 		// GetHero holds details about calls to the GetHero method.
 		GetHero []struct {
 			// Ctx is the ctx argument value.
@@ -81,8 +94,8 @@ type HeroServiceMock struct {
 		GetHeroBenchmark []struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
-			// ID is the id argument value.
-			ID string
+			// HeroID is the heroID argument value.
+			HeroID string
 		}
 		// GetHeroSuggestion holds details about calls to the GetHeroSuggestion method.
 		GetHeroSuggestion []struct {
@@ -99,6 +112,7 @@ type HeroServiceMock struct {
 	}
 	lockGetAllHeroes      sync.RWMutex
 	lockGetDataSet        sync.RWMutex
+	lockGetFullHeroInfo   sync.RWMutex
 	lockGetHero           sync.RWMutex
 	lockGetHeroBenchmark  sync.RWMutex
 	lockGetHeroSuggestion sync.RWMutex
@@ -169,6 +183,42 @@ func (mock *HeroServiceMock) GetDataSetCalls() []struct {
 	return calls
 }
 
+// GetFullHeroInfo calls GetFullHeroInfoFunc.
+func (mock *HeroServiceMock) GetFullHeroInfo(ctx context.Context, heroID string) (domain.FullHeroInfo, error) {
+	if mock.GetFullHeroInfoFunc == nil {
+		panic("HeroServiceMock.GetFullHeroInfoFunc: method is nil but HeroService.GetFullHeroInfo was just called")
+	}
+	callInfo := struct {
+		Ctx    context.Context
+		HeroID string
+	}{
+		Ctx:    ctx,
+		HeroID: heroID,
+	}
+	mock.lockGetFullHeroInfo.Lock()
+	mock.calls.GetFullHeroInfo = append(mock.calls.GetFullHeroInfo, callInfo)
+	mock.lockGetFullHeroInfo.Unlock()
+	return mock.GetFullHeroInfoFunc(ctx, heroID)
+}
+
+// GetFullHeroInfoCalls gets all the calls that were made to GetFullHeroInfo.
+// Check the length with:
+//
+//	len(mockedHeroService.GetFullHeroInfoCalls())
+func (mock *HeroServiceMock) GetFullHeroInfoCalls() []struct {
+	Ctx    context.Context
+	HeroID string
+} {
+	var calls []struct {
+		Ctx    context.Context
+		HeroID string
+	}
+	mock.lockGetFullHeroInfo.RLock()
+	calls = mock.calls.GetFullHeroInfo
+	mock.lockGetFullHeroInfo.RUnlock()
+	return calls
+}
+
 // GetHero calls GetHeroFunc.
 func (mock *HeroServiceMock) GetHero(ctx context.Context, id string) (domain.Hero, error) {
 	if mock.GetHeroFunc == nil {
@@ -206,21 +256,21 @@ func (mock *HeroServiceMock) GetHeroCalls() []struct {
 }
 
 // GetHeroBenchmark calls GetHeroBenchmarkFunc.
-func (mock *HeroServiceMock) GetHeroBenchmark(ctx context.Context, id string) (interface{}, error) {
+func (mock *HeroServiceMock) GetHeroBenchmark(ctx context.Context, heroID string) (interface{}, error) {
 	if mock.GetHeroBenchmarkFunc == nil {
 		panic("HeroServiceMock.GetHeroBenchmarkFunc: method is nil but HeroService.GetHeroBenchmark was just called")
 	}
 	callInfo := struct {
-		Ctx context.Context
-		ID  string
+		Ctx    context.Context
+		HeroID string
 	}{
-		Ctx: ctx,
-		ID:  id,
+		Ctx:    ctx,
+		HeroID: heroID,
 	}
 	mock.lockGetHeroBenchmark.Lock()
 	mock.calls.GetHeroBenchmark = append(mock.calls.GetHeroBenchmark, callInfo)
 	mock.lockGetHeroBenchmark.Unlock()
-	return mock.GetHeroBenchmarkFunc(ctx, id)
+	return mock.GetHeroBenchmarkFunc(ctx, heroID)
 }
 
 // GetHeroBenchmarkCalls gets all the calls that were made to GetHeroBenchmark.
@@ -228,12 +278,12 @@ func (mock *HeroServiceMock) GetHeroBenchmark(ctx context.Context, id string) (i
 //
 //	len(mockedHeroService.GetHeroBenchmarkCalls())
 func (mock *HeroServiceMock) GetHeroBenchmarkCalls() []struct {
-	Ctx context.Context
-	ID  string
+	Ctx    context.Context
+	HeroID string
 } {
 	var calls []struct {
-		Ctx context.Context
-		ID  string
+		Ctx    context.Context
+		HeroID string
 	}
 	mock.lockGetHeroBenchmark.RLock()
 	calls = mock.calls.GetHeroBenchmark

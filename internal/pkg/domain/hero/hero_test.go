@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain"
+	catalog "github.com/jizambrana5/dota2-hero-picker/internal/pkg/lib/errors"
 )
 
 func (t *heroSuite) Test_GetHero_StorageError() {
@@ -40,7 +41,27 @@ func (t *heroSuite) Test_SaveHeroes_GetRecordsError() {
 		return [][]string{}, errors.New("error getting the dataset")
 	}
 	err := t.service.SaveHeroes(t.ctx)
-	t.NotNil(err)
+	t.ErrorIs(err, catalog.GetDataSet)
+	t.Len(t.storageMock.SaveHeroCalls(), 0)
+}
+
+func (t *heroSuite) Test_SaveHeroes_ParseFloatError() {
+	t.datasetMock.GetRecordsFunc = func(ctx context.Context) ([][]string, error) {
+		return [][]string{
+			{"ID", "Name", "Primary Attribute", "Roles", "", "", "", "", "", "", "", "", "", ""},
+			{"1", "Abbadon", "str", "Support", "", "", "45.00dsadad", "", "", "45.10", "", "", "45.20", "", "", "45.30", "", "", "45.40", "", "", "45.50"},
+			{"2", "Ursa", "agi", "Carry", "", "", "45.00", "", "", "45.10", "", "", "45.20", "", "", "45.30", "", "", "45.40", "", "", "45.50"},
+			{"3", "Shaker", "str", "Support", "", "", "45.00", "", "", "45.10", "", "", "45.20", "", "", "45.30", "", "", "45.40", "", "", "45.50"},
+		}, nil
+	}
+	err := t.service.SaveHeroes(t.ctx)
+	t.ErrorIs(err, catalog.SaveAllHeroes)
+	t.Len(t.storageMock.SaveHeroCalls(), 2)
+}
+func (t *heroSuite) Test_SaveHeroes_Success() {
+	err := t.service.SaveHeroes(t.ctx)
+	t.Nil(err)
+	t.Len(t.storageMock.SaveHeroCalls(), 3)
 }
 
 func (t *heroSuite) Test_SaveHeroes_SaveHeroError() {

@@ -2,9 +2,24 @@ package hero
 
 import (
 	"context"
+	"fmt"
+
+	"go.uber.org/zap"
 
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/domain"
 	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/lib/errors"
+	"github.com/jizambrana5/dota2-hero-picker/internal/pkg/lib/logs"
+)
+
+type (
+	benchCn struct {
+		benchmark interface{}
+		err       error
+	}
+	heroCh struct {
+		hero domain.Hero
+		err  error
+	}
 )
 
 func (s Service) GetHero(ctx context.Context, id string) (domain.Hero, error) {
@@ -42,21 +57,63 @@ func (s Service) GetDataSet(ctx context.Context) ([][]string, error) {
 }
 
 func (s Service) SaveHeroes(ctx context.Context) (err error) {
-	// get records from dataset
+	// 1. Get records from dataset.
 	dataset, err := s.dataset.GetRecords(ctx)
 	if err != nil {
 		return errors.GetDataSet
 	}
 
-	// iterate over dataset, build hero and save it in db
+	// 2. Create chanel
+	heroCh := make(chan []string, len(dataset)-1)
+	heroErrCh := make(chan error, len(dataset)-1)
+	workers := 3
+	// 3. Create goroutines to process and save heroes into database concurrently.
+	for i := 0; i <= workers; i++ {
+		go s.saveSingleHero(ctx, heroCh, heroErrCh)
+	}
+
+	// 4. Iterate over dataset and send it to a channel to be processed.
 	for i, h := range dataset {
 		// skip column titles
 		if i == 0 {
 			continue
 		}
+		heroCh <- h
+	}
+	// 5. Close hero channel
+	close(heroCh)
+
+	// 6. Iterate over errors channel
+	heroErrors := make([]error, 0)
+
+	for j := 0; j < len(dataset)-1; j++ {
+		e := <-heroErrCh
+		if e != nil {
+			heroErrors = append(heroErrors, e)
+		}
+	}
+	/*for e := range heroErrCh {
+		if e != nil {
+			heroErrors = append(heroErrors, e)
+		}
+	}
+	close(heroErrCh) */
+
+	if len(heroErrors) > 0 {
+		logs.Logger.Error("save_all_heroes",
+			zap.Error(fmt.Errorf("failed saved heroes publication: %v", heroErrors)))
+		return errors.SaveAllHeroes
+	}
+
+	return nil
+}
+
+func (s Service) saveSingleHero(ctx context.Context, heroCh chan []string, heroErrCh chan error) {
+	for h := range heroCh {
 		winRates, err := domain.BuildWinRates(h)
 		if err != nil {
-			return errors.HeroSave
+			heroErrCh <- errors.HeroSave
+			continue
 		}
 		hero := domain.Hero{
 			HeroIndex:        h[0],
@@ -65,16 +122,34 @@ func (s Service) SaveHeroes(ctx context.Context) (err error) {
 			Role:             domain.BuildRoles(h[3]),
 			WinRates:         winRates,
 		}
-		err = s.storage.SaveHero(ctx, hero)
-		if err != nil {
-			return errors.HeroSave
-		}
+		heroErrCh <- s.storage.SaveHero(ctx, hero)
 	}
-	return nil
 }
 
 func (s Service) GetHeroBenchmark(ctx context.Context, id string) (interface{}, error) {
 	return s.benchmark.GetHeroBenchmark(ctx, id)
+}
+
+func (s Service) GetFullHeroInfo(ctx context.Context, heroID string) (domain.FullHeroInfo, error) {
+	benchCh := s.getHeroBenchmark(ctx, heroID)
+	heroStorageCh := s.getHeroStorage(ctx, heroID)
+
+	var response domain.FullHeroInfo
+	for i := 0; i < 2; i++ {
+		select {
+		case msg := <-benchCh:
+			if msg.err != nil {
+				return domain.FullHeroInfo{}, msg.err
+			}
+			response.Benchmark = msg.benchmark
+		case msg := <-heroStorageCh:
+			if msg.err != nil {
+				return domain.FullHeroInfo{}, msg.err
+			}
+			response.Hero = msg.hero
+		}
+	}
+	return response, nil
 }
 
 // Helper function to filter heroes based on user preferences
@@ -108,4 +183,28 @@ func contains(slice []domain.Role, str domain.Role) bool {
 		}
 	}
 	return false
+}
+
+func (s Service) getHeroBenchmark(ctx context.Context, heroID string) chan benchCn {
+	out := make(chan benchCn, 1)
+	go func() {
+		bench, err := s.benchmark.GetHeroBenchmark(ctx, heroID)
+		out <- benchCn{
+			benchmark: bench,
+			err:       err,
+		}
+	}()
+	return out
+}
+
+func (s Service) getHeroStorage(ctx context.Context, heroID string) chan heroCh {
+	out := make(chan heroCh, 1)
+	go func() {
+		hero, err := s.storage.GetHero(ctx, heroID)
+		out <- heroCh{
+			hero: hero,
+			err:  err,
+		}
+	}()
+	return out
 }
